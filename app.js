@@ -1,8 +1,8 @@
 const canvasEl = document.querySelector("canvas");
 const conX = canvasEl.getContext("2d");
 
-canvasEl.height = 400;
-canvasEl.width = 400;
+canvasEl.height = 440;
+canvasEl.width = 440;
 
 // Game Parameters
 let speed = 7;
@@ -22,18 +22,26 @@ let tileSize = canvasEl.width / tileCount;
 // snakeBody Array
 const snakeBody = [];
 
-// -------------------------------------------Arrow Jeys Event Listener
-document.addEventListener("keydown", keyDown);
+// Arrow Keys Event Listener
+document.addEventListener("keydown", changeDirection);
 
 const eatSnack = new Audio("eat.wav");
 
-// -------------------------------------------The Game Loop
+// The Game Loop
 function playGame() {
   changeSnakePosition();
 
   // handling gameOver
-  let result = gameOver();
-  if (result) {
+  if (gameOver()) {
+    conX.fillStyle = "white";
+    conX.font = "50px Arial";
+    conX.textAlign = "center";
+    conX.fillText(
+      "GAME OVER! Press Space to Restart",
+      canvasEl.width / 2,
+      canvasEl.height / 2
+    );
+    document.addEventListener("keydown", restartGame);
     return;
   }
 
@@ -45,59 +53,64 @@ function playGame() {
 
   setTimeout(playGame, 1000 / speed);
 }
-// -------------------------------------------gameOver Function
+
+// Restart Game
+function restartGame(e) {
+  if (e.keyCode === 32) {
+    window.location.reload();
+  }
+}
+
+// GameOver Function
 function gameOver() {
-  let gameOver = false;
+  let isGameOver = false;
 
   if (xV === 0 && yV === 0) return false;
 
-  // checking for wall collision
+  // Checking for wall collision
   if (
     snakeHeadX < 0 ||
     snakeHeadX === tileCount ||
     snakeHeadY < 0 ||
     snakeHeadY === tileCount
   ) {
-    gameOver = true;
+    isGameOver = true;
   }
 
-  // checking the snake body collision
+  // Checking the snake body collision
   for (let i = 0; i < snakeBody.length; i++) {
     let part = snakeBody[i];
     if (part.x === snakeHeadX && part.y === snakeHeadY) {
-      gameOver = true;
+      isGameOver = true;
       break;
     }
   }
-
-  if (gameOver) {
-    conX.fillStyle = "white";
-    conX.font = "50px sans-serif";
-    conX.fillText("GAME OVER", canvasEl.width / 8, canvasEl.height / 2);
+  if (isGameOver) {
+    return true;
   }
 
-  return gameOver;
+  return false;
 }
 
-// -------------------------------------------drawScore Function
+// drawScore Function
 function drawScore() {
   conX.fillStyle = "white";
-  conX.font = "15px sans-serif";
-  conX.fillText(`Score: ${score}`, 20, 20);
+  conX.font = "20px Arial";
+  conX.fillText(`Score: ${score}`, 10, 25);
 }
 
-// -------------------------------------------clearScreen Function
+// clearScreen Function
 function clearScreen() {
   conX.fillStyle = "black";
   conX.fillRect(0, 0, canvasEl.width, canvasEl.height);
 }
 
-// -------------------------------------------drawSnake Function
+// drawSnake Function
 function drawSnake() {
-  conX.fillStyle = "orange";
+  conX.fillStyle = "#9acd32";
   for (let i = 0; i < snakeBody.length; i++) {
     let part = snakeBody[i];
-    conX.fillRect(part.x * tileCount, part.y * tileCount, tileSize, tileSize);
+    conX.fillRect(part.x * tileSize, part.y * tileSize, tileSize, tileSize);
   }
 
   snakeBody.push(new SnakeBody(snakeHeadX, snakeHeadY));
@@ -106,29 +119,28 @@ function drawSnake() {
     snakeBody.shift();
   }
 
-  conX.fillStyle = "green";
+  conX.fillStyle = "#ffa500";
   conX.fillRect(
-    snakeHeadX * tileCount,
-    snakeHeadY * tileCount,
+    snakeHeadX * tileSize,
+    snakeHeadY * tileSize,
     tileSize,
     tileSize
   );
 }
 
-// ------------------------------------------changeSnakePosition Function
+// changeSnakePosition Function
 function changeSnakePosition() {
-  snakeHeadX = snakeHeadX + xV;
-  snakeHeadY = snakeHeadY + yV;
+  snakeHeadX += xV;
+  snakeHeadY += yV;
 }
 
-// ------------------------------------------drawSnack Function
+// drawSnack Function
 function drawSnack() {
   conX.fillStyle = "red";
-  conX.fillRect(snackX * tileCount, snackY * tileCount, tileSize, tileSize);
+  conX.fillRect(snackX * tileSize, snackY * tileSize, tileSize, tileSize);
 }
 
-// ------------------------------------------snackColiDete Function
-
+// snackColiDete Function
 function snackColiDete() {
   if (snackX === snakeHeadX && snackY === snakeHeadY) {
     snackX = Math.floor(Math.random() * tileCount);
@@ -140,37 +152,33 @@ function snackColiDete() {
   }
 }
 
-// -------------------------------------------keyDown Function
-function keyDown(e) {
+// keyDown Function
+function changeDirection(e) {
   // moving up
-  if (e.keyCode === 38) {
-    if (yV === 1) return;
+  if (e.keyCode === 38 && yV !== 1) {
     yV = -1;
     xV = 0;
   }
 
   // moving down
-  if (e.keyCode === 40) {
-    if (yV === -1) return;
+  if (e.keyCode === 40 && yV !== -1) {
     yV = 1;
     xV = 0;
   }
 
   // moving left
-  if (e.keyCode === 37) {
-    if (xV === 1) return;
+  if (e.keyCode === 37 && xV !== 1) {
     xV = -1;
     yV = 0;
   }
   // moving right
-  if (e.keyCode === 39) {
-    if (xV === -1) return;
+  if (e.keyCode === 39 && xV !== -1) {
     xV = 1;
     yV = 0;
   }
 }
 
-// ---------------------------The SnakeBody Class
+// The SnakeBody Class
 class SnakeBody {
   constructor(x, y) {
     this.x = x;
@@ -179,3 +187,4 @@ class SnakeBody {
 }
 
 playGame();
+
